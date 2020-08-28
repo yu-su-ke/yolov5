@@ -15,7 +15,7 @@ class ConfirmAnnotation:
 
     def main(self):
         directory_path_list = glob.glob(os.path.join(self.base_path, '*'))
-        with open('./billboard/model_data/billboard_' + self.file_name + '.txt', 'w', encoding='utf-8') as text_file:
+        with open('../billboard/model_data/billboard_' + self.file_name + '.txt', 'w', encoding='utf-8') as text_file:
             for directory_path in directory_path_list:
                 # パスの半角スペースを_に変換
                 new_directory_path = directory_path.replace(' ', '_')
