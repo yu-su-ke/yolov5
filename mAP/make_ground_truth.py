@@ -1,62 +1,52 @@
 import glob
+import json
 import os
-import random
 
 from tqdm import tqdm
-from PIL import Image
-from PIL import ImageFile
-
-ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from scripts.extra.intersect_gt_and_dr import adjust_ground_and_detect
 from class_list import LabelList
 
 
-def main(label_list, learn_label_type):
-    image_size = 608
-    text_file_list = glob.glob('../../billboard/labels/*.txt')
-    for text_file in tqdm(text_file_list):
-        with open(text_file, 'r', encoding='utf-8') as text:
-            save_path = './input/billboard_' + learn_label_type + '/ground-truth/' + \
-                        os.path.splitext(os.path.basename(text_file))[0] + \
-                        '.txt'  # 保存するパス
-            with open(save_path, 'w', encoding='utf-8') as ground_truth:
-                image_point_list = text.readlines()
-                for image_point in image_point_list:
-                    list_element = image_point.split(' ')
-                    # print(list_element)
-                    label = label_list[int(list_element[0])]
-                    # 608 * 608に修正
-                    left, top, right, bottom = \
-                        convert_yolo_coordinates_to_voc(float(list_element[1]), float(list_element[2]),
-                                                        float(list_element[3]), float(list_element[4]),
-                                                        image_size, image_size)
-                    ground_truth.write('{} {} {} {} {}'.format(label, left, top, right, bottom))
-                    ground_truth.write('\n')
+class MakeGroundTruth:
+    def __init__(self, label_list, label_name):
+        self.base_path = '../../annotation_data/media_annotation/'
+        self.label_dictionary = {}
 
+        self.label_list = label_list
+        self.label_name = label_name
 
-def convert_yolo_coordinates_to_voc(x_c_n, y_c_n, width_n, height_n, img_width, img_height):
-    # remove normalization given the size of the image
-    x_c = float(x_c_n) * img_width
-    y_c = float(y_c_n) * img_height
-    width = float(width_n) * img_width
-    height = float(height_n) * img_height
-    # compute half width and half height
-    half_width = width / 2
-    half_height = height / 2
-    # compute left, top, right, bottom
-    # in the official VOC challenge the top-left pixel in the image has coordinates (1;1)
-    left = int(x_c - half_width) + 1
-    top = int(y_c - half_height) + 1
-    right = int(x_c + half_width) + 1
-    bottom = int(y_c + half_height) + 1
-    return left, top, right, bottom
+    def main(self):
+        directory_path_list = glob.glob(os.path.join(self.base_path, '*'))
+        for directory_path in tqdm(directory_path_list):
+            file_path_list = glob.glob(os.path.join(directory_path, '*.json'))
+            for file_path in file_path_list:
+                json_file = open(file_path)
+                asset = json.load(json_file)
+                self.write_annotation_path_label(asset)
+
+    def write_annotation_path_label(self, asset):
+        file_name = os.path.splitext(asset['asset']['name'])[0]
+        with open('./input/billboard_{}/ground-truth/{}.txt'.format(self.label_name, file_name), 'w',
+                  encoding='utf-8') as text_file:
+            for region in asset['regions']:
+                label = region['tags'][0]
+                if label == 'main':
+                    label = region['tags'][1]
+                x1 = int(region['points'][0]['x'])
+                y1 = int(region['points'][0]['y'])
+                x2 = int(region['points'][2]['x'])
+                y2 = int(region['points'][2]['y'])
+                text_file.write('{} {} {} {} {}\n'.format(label, x1, y1, x2, y2))
 
 
 if __name__ in '__main__':
     label_list, label_name = LabelList.ALL.value
+
     os.system('rm -rf ./input/billboard_' + label_name + '/ground-truth/*')
-    main(label_list, label_name)
+
+    make_ground_truth = MakeGroundTruth(label_list, label_name)
+    make_ground_truth.main()
 
     # ground_truthとdetect両方に存在しないファイルを削除する. これを回すとground-truthがnullになるので最初だけ回す
     adjust_ground_and_detect(label_name)

@@ -10,8 +10,8 @@ from class_list import LabelList
 
 class MakeDataset:
     def __init__(self, label_name):
-        self.original_image_path = '../../copy_billboard/images'
-        self.original_label_path = '../../copy_billboard/labels'
+        self.original_image_path = '../../billboard/images'
+        self.original_label_path = '../../billboard/labels'
         self.label_name = label_name
         self.count = 1
 
@@ -48,8 +48,8 @@ if __name__ == '__main__':
     _, label_name = LabelList.ALL.value
 
     for data_type in ['train', 'val', 'test']:
-        os.system('mv ../../copy_billboard/images/{}/* ../../copy_billboard/images/'.format(data_type))
-        os.system('rm ../../copy_billboard/labels/{}/*'.format(data_type))
+        os.system('mv ../../billboard/images/{}/* ../../billboard/images/'.format(data_type))
+        os.system('rm ../../billboard/labels/{}/*'.format(data_type))
 
     make_dataset = MakeDataset(label_name)
     make_dataset.main()
