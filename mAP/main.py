@@ -1,18 +1,26 @@
+import argparse
+import datetime
 import glob
 import json
-import os
-import shutil
-import operator
-import sys
-import argparse
 import math
+import os
+import operator
+import shutil
+import sys
+import time
 
 import numpy as np
 
 from scripts.extra.intersect_gt_and_dr import adjust_ground_and_detect
 from class_list import LabelList
 
+
 _, label_type = LabelList.ALL.value
+
+today = datetime.datetime.fromtimestamp(time.time())
+format_today = today.strftime('%Y_%m_%d_%H_%M_%S')
+save_path = 'billboard_{}_random_directory/{}'.format(label_type, format_today)
+
 
 # ground_truthとdetect両方に存在しないファイルを削除する. これを回すとground-truthがnullになるので最初だけ回す
 # adjust_ground_and_detect(label_type)
@@ -369,7 +377,7 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title, x_label, out
 TEMP_FILES_PATH = ".temp_files"
 if not os.path.exists(TEMP_FILES_PATH):  # if it doesn't exist already
     os.makedirs(TEMP_FILES_PATH)
-results_files_path = "results/billboard_" + label_type
+results_files_path = "results/" + save_path
 if os.path.exists(results_files_path):  # if it exist already
     # reset the results directory
     shutil.rmtree(results_files_path)
