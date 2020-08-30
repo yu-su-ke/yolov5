@@ -2,12 +2,12 @@ import glob
 import json
 import os
 
-from pytorch_yolov3 import class_list
+from class_list import LabelList
 
 
 class ConfirmAnnotation:
     def __init__(self, label_list, label_name):
-        self.base_path = '../../annotation_data/'
+        self.base_path = '../../annotation_data/media_annotation/'
         self.label_dictionary = {}
 
         self.learn_label_type = label_list
@@ -15,7 +15,7 @@ class ConfirmAnnotation:
 
     def main(self):
         directory_path_list = glob.glob(os.path.join(self.base_path, '*'))
-        with open('../billboard/model_data/billboard_' + self.file_name + '.txt', 'w', encoding='utf-8') as text_file:
+        with open('../../billboard/model_data/billboard_' + self.file_name + '.txt', 'w', encoding='utf-8') as text_file:
             for directory_path in directory_path_list:
                 # パスの半角スペースを_に変換
                 new_directory_path = directory_path.replace(' ', '_')
@@ -33,7 +33,7 @@ class ConfirmAnnotation:
     # trainデータのためのファイルパスの記録
     def write_annotation_path_label(self, asset, image_path, text_file):
         # print(image_path)
-        text_file.write('.' + image_path + ' ')
+        text_file.write(image_path + ' ')
         for region in asset['regions']:
             label = self.convert_label(region['tags'])
             if label is None:
@@ -77,7 +77,7 @@ class ConfirmAnnotation:
 
 
 if __name__ in '__main__':
-    label_list, label_name = class_list.LabelList.ONE.value
+    label_list, label_name = LabelList.ALL.value
     print(label_list, label_name)
     ca = ConfirmAnnotation(label_list, label_name)
     ca.main()

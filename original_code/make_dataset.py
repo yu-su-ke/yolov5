@@ -9,10 +9,11 @@ from class_list import LabelList
 
 
 class MakeDataset:
-    def __init__(self, label_name):
+    def __init__(self, label_name, task):
         self.original_image_path = '../../billboard/images'
         self.original_label_path = '../../billboard/labels'
         self.label_name = label_name
+        self.task = task
         self.count = 1
 
     def main(self):
@@ -40,16 +41,19 @@ class MakeDataset:
                 self.count += 1
 
     def save_file(self, image_path, data_type, image_name, label_path, text_name):
-        shutil.move(image_path, '{}/{}/{}'.format(self.original_image_path, data_type, image_name))
-        shutil.copy(label_path, '{}/{}/{}'.format(self.original_label_path, data_type, text_name))
+        with open('../../billboard/history/{}/billboard_{}.txt'.format(self.task, data_type), 'a', encoding='utf-8') as text_file:
+            shutil.move(image_path, '{}/{}/{}'.format(self.original_image_path, data_type, image_name))
+            shutil.copy(label_path, '{}/{}/{}'.format(self.original_label_path, data_type, text_name))
+            text_file.write('{}/{}/{}\n'.format(self.original_image_path, data_type, image_name))
 
 
 if __name__ == '__main__':
     _, label_name = LabelList.ALL.value
+    task = 'random_image'   # historyデータ保存用のパス
 
     for data_type in ['train', 'val', 'test']:
         os.system('mv ../../billboard/images/{}/* ../../billboard/images/'.format(data_type))
         os.system('rm ../../billboard/labels/{}/*'.format(data_type))
 
-    make_dataset = MakeDataset(label_name)
+    make_dataset = MakeDataset(label_name, task)
     make_dataset.main()
