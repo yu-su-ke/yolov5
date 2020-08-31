@@ -4,8 +4,9 @@ import shutil
 from tqdm import tqdm
 
 from class_list import LabelList
-_, label_name = LabelList.ALL.value
 
+
+_, label_name = LabelList.ALL.value
 # advertiser, media, product
 task_name = 'media'
 
