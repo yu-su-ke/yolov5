@@ -18,9 +18,11 @@ def main(image_directory, save_directory):
 
 
 if __name__ in '__main__':
-    image_directory = '../../annotation_data/'
-    save_directory = '../../billboard/images/'
+    # advertiser, media, product
+    task_name = 'advertiser'
+    image_directory = '../../annotation_data/{}_annotation/'.format(task_name)
+    save_directory = '../../{}/images/'.format(task_name)
 
-    os.system('rm ../../billboard/images/*')
+    os.system('rm ../../{}/images/*'.format(task_name))
 
     main(image_directory, save_directory)

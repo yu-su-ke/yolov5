@@ -6,16 +6,17 @@ from class_list import LabelList
 
 
 class ConfirmAnnotation:
-    def __init__(self, label_list, label_name):
-        self.base_path = '../../annotation_data/media_annotation/'
-        self.label_dictionary = {}
+    def __init__(self, label_list, label_name, task_name):
+        self.label_list = label_list
+        self.label_name = label_name
+        self.task_name = task_name
 
-        self.learn_label_type = label_list
-        self.file_name = label_name
+        self.base_path = '../../annotation_data/{}_annotation/'.format(self.task_name)
+        self.label_dictionary = {}
 
     def main(self):
         directory_path_list = glob.glob(os.path.join(self.base_path, '*'))
-        with open('../../billboard/model_data/billboard_' + self.file_name + '.txt', 'w', encoding='utf-8') as text_file:
+        with open('../../{}/model_data/billboard_{}.txt'.format(self.task_name, self.label_name), 'w', encoding='utf-8') as text_file:
             for directory_path in directory_path_list:
                 # パスの半角スペースを_に変換
                 new_directory_path = directory_path.replace(' ', '_')
@@ -48,14 +49,14 @@ class ConfirmAnnotation:
     # ラベルを数字にコンバート
     def convert_label(self, tags):
         label = tags[0]
-        if label in self.learn_label_type:
-            return self.learn_label_type.index(label)
+        if label in self.label_list:
+            return self.label_list.index(label)
         elif label == 'main':
-            if label in self.learn_label_type:
-                return self.learn_label_type.index(tags[1])
+            if label in self.label_list:
+                return self.label_list.index(tags[1])
             else:
                 pass
-        elif self.learn_label_type[0] == 'billboard':
+        elif self.label_list[0] == 'billboard':
             return 0
         else:
             pass
@@ -77,7 +78,9 @@ class ConfirmAnnotation:
 
 
 if __name__ in '__main__':
-    label_list, label_name = LabelList.ALL.value
+    label_list, label_name = LabelList.Adv.value
+    task_name = 'advertiser'
+
     print(label_list, label_name)
-    ca = ConfirmAnnotation(label_list, label_name)
+    ca = ConfirmAnnotation(label_list, label_name, task_name)
     ca.main()

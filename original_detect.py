@@ -18,7 +18,7 @@ from utils.general import (
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
 from original_code.class_list import LabelList    # オリジナル
-class_list, label_type = LabelList.ONE.value
+class_list, label_type = LabelList.ALL.value
 
 
 def detect(save_img=False):
@@ -123,6 +123,7 @@ def detect(save_img=False):
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
 
+
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))
 
@@ -175,7 +176,10 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     print(opt)
 
-    os.system('rm -rf mAP/input/billboard_{}/detection-results/*'.format(label_type))
+    save_path = './mAP/input/billboard_{}/detection-results/*'.format(label_type)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    os.system('rm -rf {}'.format(save_path))
 
     with torch.no_grad():
         if opt.update:  # update all models (to fix SourceChangeWarning)

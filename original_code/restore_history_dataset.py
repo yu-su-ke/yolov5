@@ -1,16 +1,23 @@
 import os
 import shutil
 
+from tqdm import tqdm
+
 from class_list import LabelList
 _, label_name = LabelList.ALL.value
 
-original_image_path = '../../billboard/images'
-original_label_path = '../../billboard/labels'
+# advertiser, media, product
+task_name = 'media'
 
-for data_type in ['train', 'val', 'test']:
-    os.system('mv ../../billboard/images/{}/* ../../billboard/images/'.format(data_type))
-    os.system('rm ../../billboard/labels/{}/*'.format(data_type))
-    with open('../../billboard/history/random_directory/billboard_{}.txt'.format(data_type), 'r',
+original_image_path = '../../{}/images'.format(task_name)
+original_label_path = '../../{}/labels'.format(task_name)
+
+for data_type in tqdm(['train', 'val', 'test']):
+    os.system('mv ../../{}/images/{}/* ../../{}/images/'.format(task_name, data_type, task_name))
+    os.system('rm ../../{}/labels/{}/*'.format(task_name, data_type))
+
+for data_type in tqdm(['train', 'val', 'test']):
+    with open('../../{}/history/random_image/billboard_{}.txt'.format(task_name, data_type), 'r',
               encoding='utf-8') as text_file:
         image_file_path_list = text_file.readlines()
         for image_file_path in image_file_path_list:
