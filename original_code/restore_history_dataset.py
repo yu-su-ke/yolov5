@@ -18,7 +18,7 @@ for data_type in tqdm(['train', 'val', 'test']):
     os.system('rm ../../{}/labels/{}/*'.format(task_name, data_type))
 
 for data_type in tqdm(['train', 'val', 'test']):
-    with open('../../{}/history/random_image/billboard_{}.txt'.format(task_name, data_type), 'r',
+    with open('../../{}/history/important_random_directory/billboard_{}.txt'.format(task_name, data_type), 'r',
               encoding='utf-8') as text_file:
         image_file_path_list = text_file.readlines()
         for image_file_path in image_file_path_list:

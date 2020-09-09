@@ -245,4 +245,7 @@ crashlytics-build.properties
 fabric.properties
 
 # original code
+deep_sort/
+movie/
 command.md
+test.mp4

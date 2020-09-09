@@ -19,7 +19,7 @@ _, label_type = LabelList.ALL.value
 
 today = datetime.datetime.fromtimestamp(time.time())
 format_today = today.strftime('%Y_%m_%d_%H_%M_%S')
-save_path = 'billboard_{}_random_directory/{}'.format(label_type, format_today)
+save_path = 'billboard_{}_random_image/{}'.format(label_type, format_today)
 
 
 # ground_truthとdetect両方に存在しないファイルを削除する. これを回すとground-truthがnullになるので最初だけ回す
