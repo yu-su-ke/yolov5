@@ -17,8 +17,10 @@ from utils.general import (
     xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
-from original_code.class_list import LabelList    # オリジナル
-class_list, label_type = LabelList.ALL.value
+from original_code.class_list import LabelList  # オリジナル
+from original_code.temp_cut_image import cut_image
+
+class_list, _ = LabelList.Media.value
 
 
 def detect(save_img=False):
@@ -108,13 +110,18 @@ def detect(save_img=False):
                 '''
                 オリジナルコード部分
                 '''
+                detection_image_point_list = []
+                detection_image_result = []
                 for *xyxy, conf, cls in reversed(det):
+                    image_name = os.path.splitext(os.path.basename(path))[0]
+                    x1, y1, x2, y2 = [int(point.item()) for point in xyxy]
+                    label = class_list[int(cls.item())]
+                    detection_image_point_list.append([x1, y1, x2, y2])
+                    detection_image_result.append([label, conf.item()])
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         save_detect_result_path = './mAP/input/billboard_{}/detection-results/'.format(label_type) + \
-                                                  os.path.splitext(os.path.basename(path))[0]
-                        x1, y1, x2, y2 = [int(point.item()) for point in xyxy]
-                        label = class_list[int(cls.item())]
+                                                  image_name
                         with open(save_detect_result_path + '.txt', 'a') as f:
                             # f.write(('%g ' * 6 + '\n') % (label, conf, x1, y1, x2, y2 ))  # label format
                             f.write('{} {} {} {} {} {}\n'.format(label, conf, x1, y1, x2, y2))
@@ -122,11 +129,11 @@ def detect(save_img=False):
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
+                cut_image(detection_image_point_list, source, image_name)  # cut out detection range
             # 画像中から広告を一切検出できなかった画像を記録
             else:
                 with open('./not_detect_image.txt', 'a', encoding='utf-8') as text_file:
                     text_file.write(path + '\n')
-
 
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))
@@ -163,32 +170,35 @@ def detect(save_img=False):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
-    parser.add_argument('--source', type=str, default='inference/images', help='source')  # file/folder, 0 for webcam
-    parser.add_argument('--output', type=str, default='inference/output', help='output folder')  # output folder
-    parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.5, help='IOU threshold for NMS')
-    parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--view-img', action='store_true', help='display results')
-    parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
-    parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 0 2 3')
-    parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
-    parser.add_argument('--augment', action='store_true', help='augmented inference')
-    parser.add_argument('--update', action='store_true', help='update all models')
-    opt = parser.parse_args()
-    print(opt)
+    genre_list, label_type = LabelList.Genre.value
+    for genre in genre_list:
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
+        parser.add_argument('--source', type=str, default='inference/test_images/' + genre,
+                            help='source')  # file/folder, 0 for webcam
+        parser.add_argument('--output', type=str, default='inference/output', help='output folder')  # output folder
+        parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
+        parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
+        parser.add_argument('--iou-thres', type=float, default=0.5, help='IOU threshold for NMS')
+        parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+        parser.add_argument('--view-img', action='store_true', help='display results')
+        parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
+        parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 0 2 3')
+        parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
+        parser.add_argument('--augment', action='store_true', help='augmented inference')
+        parser.add_argument('--update', action='store_true', help='update all models')
+        opt = parser.parse_args()
+        print(opt)
 
-    save_path = './mAP/input/billboard_{}/detection-results/*'.format(label_type)
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-    os.system('rm -rf {}'.format(save_path))
+        save_path = './mAP/input/billboard_{}/detection-results/*'.format(label_type)
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        os.system('rm -rf {}'.format(save_path))
 
-    with torch.no_grad():
-        if opt.update:  # update all models (to fix SourceChangeWarning)
-            for opt.weights in ['yolov5s.pt', 'yolov5m.pt', 'yolov5l.pt', 'yolov5x.pt']:
+        with torch.no_grad():
+            if opt.update:  # update all models (to fix SourceChangeWarning)
+                for opt.weights in ['yolov5s.pt', 'yolov5m.pt', 'yolov5l.pt', 'yolov5x.pt']:
+                    detect()
+                    strip_optimizer(opt.weights)
+            else:
                 detect()
-                strip_optimizer(opt.weights)
-        else:
-            detect()
