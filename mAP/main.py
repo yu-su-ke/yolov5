@@ -15,7 +15,7 @@ from scripts.extra.intersect_gt_and_dr import adjust_ground_and_detect
 from class_list import LabelList
 
 
-_, label_type = LabelList.ALL.value
+_, label_type = LabelList.Adv.value
 
 today = datetime.datetime.fromtimestamp(time.time())
 format_today = today.strftime('%Y_%m_%d_%H_%M_%S')

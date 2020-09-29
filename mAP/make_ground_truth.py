@@ -69,9 +69,9 @@ class MakeGroundTruth:
 
 
 if __name__ in '__main__':
-    class_list, label_name = LabelList.ALL.value
+    class_list, label_name = LabelList.Adv.value
     # advertiser, media, product
-    task_name = 'media'
+    task_name = 'advertiser'
 
     os.system('rm -rf ./input/billboard_' + label_name + '/ground-truth/*')
 
