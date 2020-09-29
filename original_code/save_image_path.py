@@ -31,8 +31,17 @@ class ConfirmAnnotation:
                     self.count_label(asset, image_path)
         print(sorted(self.label_dictionary.items(), key=lambda x: x[1], reverse=True))
 
-    # trainデータのためのファイルパスの記録
     def write_annotation_path_label(self, asset, image_path, text_file):
+        """trainデータのためのファイルパスの記録
+
+        Args:
+            asset (dict):
+            image_path (str):
+            text_file (file):
+
+        Returns: None
+
+        """
         # print(image_path)
         text_file.write(image_path + ' ')
         for region in asset['regions']:
@@ -46,20 +55,44 @@ class ConfirmAnnotation:
             text_file.write('{},{},{},{},{} '.format(x1, y1, x2, y2, label))
         text_file.write('\n')
 
-    # ラベルを数字にコンバート
+    # # ラベルを数字にコンバート
+    # def convert_label(self, tags):
+    #     label = tags[0]
+    #     if label in self.label_list:
+    #         return self.label_list.index(label)
+    #     elif label == 'main':
+    #         if label in self.label_list:
+    #             return self.label_list.index(tags[1])
+    #         else:
+    #             pass
+    #     elif self.label_list[0] == 'billboard':
+    #         return 0
+    #     else:
+    #         pass
+
     def convert_label(self, tags):
-        label = tags[0]
-        if label in self.label_list:
-            return self.label_list.index(label)
-        elif label == 'main':
+        """advertiser, product用の仮関数
+
+        Args:
+            tags (list): アノテーションにつけられたラベル
+
+        Returns:
+            int: ラベルをインデックスに変換
+
+        """
+        if 'main' in tags:
+            return None
+        else:
+            label = tags[0]
             if label in self.label_list:
-                return self.label_list.index(tags[1])
+                return self.label_list.index(label)
+            elif label == 'main':
+                if label in self.label_list:
+                    return self.label_list.index(tags[1])
+            elif self.label_list[0] == 'billboard':
+                return 0
             else:
                 pass
-        elif self.label_list[0] == 'billboard':
-            return 0
-        else:
-            pass
 
     # アノテーションデータの各ラベルの総数を確認
     def count_label(self, asset, image_path):

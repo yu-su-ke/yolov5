@@ -45,15 +45,18 @@ class MakeDataset:
 
     def save_file(self, image_path, data_type, image_name, label_path, text_name):
         save_history_path = '../../{}/history/{}/billboard_{}.txt'.format(self.task_name, self.task, data_type)
-        with open(save_history_path, 'a', encoding='utf-8') as text_file:
-            shutil.move(image_path, '{}/{}/{}'.format(self.original_image_path, data_type, image_name))
-            shutil.copy(label_path, '{}/{}/{}'.format(self.original_label_path, data_type, text_name))
-            text_file.write('{}/{}/{}\n'.format(self.original_image_path, data_type, image_name))
+        try:
+            with open(save_history_path, 'a', encoding='utf-8') as text_file:
+                shutil.move(image_path, '{}/{}/{}'.format(self.original_image_path, data_type, image_name))
+                shutil.copy(label_path, '{}/{}/{}'.format(self.original_label_path, data_type, text_name))
+                text_file.write('{}/{}/{}\n'.format(self.original_image_path, data_type, image_name))
+        except FileNotFoundError:
+            pass
 
 
 if __name__ == '__main__':
-    _, label_name = LabelList.ALL.value
-    task_name = 'media'
+    _, label_name = LabelList.Adv.value
+    task_name = 'advertiser'
     task = 'random_image'   # historyデータ保存用のパス
 
     for data_type in ['train', 'val', 'test']:

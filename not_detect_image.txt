@@ -1162,3 +1162,12 @@
 /home/mokky/Program/yolov5/inference/test_images/tv/99804.jpg
 /home/mokky/Program/yolov5/inference/test_images/tv/99924.jpg
 /home/mokky/Program/yolov5/inference/test_images/tv/99931.jpg
+/home/mokky/Program/advertiser/images/test/133349.jpg
+/home/mokky/Program/advertiser/images/test/141837.jpg
+/home/mokky/Program/advertiser/images/test/181220.jpg
+/home/mokky/Program/advertiser/images/test/208515.jpg
+/home/mokky/Program/advertiser/images/test/215888.jpg
+/home/mokky/Program/advertiser/images/test/235605.jpg
+/home/mokky/Program/advertiser/images/test/275279.jpg
+/home/mokky/Program/advertiser/images/test/328057.jpg
+/home/mokky/Program/advertiser/images/test/346615.jpg

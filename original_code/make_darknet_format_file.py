@@ -58,7 +58,8 @@ class MakeDarknetFile:
         format_image_path_list = []
         for image_path in tqdm(image_path_list):
             list_element_num = image_path.split(' ')
-            if len(list_element_num) >= 2:
+            print(list_element_num)
+            if len(list_element_num) >= 3:
                 format_image_path_list.append(image_path)
             else:
                 pass
@@ -70,7 +71,7 @@ if __name__ in '__main__':
     class_list, label_name = LabelList.Adv.value
     task_name = 'advertiser'
 
-    save_path = '../../billboard/labels/{}/'.format(label_name)
+    save_path = '../../{}/labels/{}/'.format(label_name, label_name)
     os.system('rm {}'.format(os.path.join(save_path, '*')))
 
     make_darknet_file = MakeDarknetFile(class_list, label_name, task_name)
