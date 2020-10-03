@@ -247,5 +247,6 @@ fabric.properties
 # original code
 deep_sort/
 movie/
+original_code/not_detect_image/
 command.md
 test.mp4
