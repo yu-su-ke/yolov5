@@ -57,6 +57,15 @@ class ConfirmAnnotation:
 
     # # ラベルを数字にコンバート
     # def convert_label(self, tags):
+    #     """media用の関数
+    #
+    #     Args:
+    #         tags (list): アノテーションにつけられたラベル
+    #
+    #     Returns:
+    #         int: ラベルをインデックスに変換
+    #
+    #     """
     #     label = tags[0]
     #     if label in self.label_list:
     #         return self.label_list.index(label)
@@ -94,8 +103,16 @@ class ConfirmAnnotation:
             else:
                 pass
 
-    # アノテーションデータの各ラベルの総数を確認
     def count_label(self, asset, image_path):
+        """アノテーションデータの各ラベルの総数を確認
+
+        Args:
+            asset (dict):
+            image_path (str):
+
+        Returns:
+
+        """
         for region in asset['regions']:
             label = region['tags'][0]
             if label == 'main':

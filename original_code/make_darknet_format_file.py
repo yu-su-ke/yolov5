@@ -58,7 +58,6 @@ class MakeDarknetFile:
         format_image_path_list = []
         for image_path in tqdm(image_path_list):
             list_element_num = image_path.split(' ')
-            print(list_element_num)
             if len(list_element_num) >= 3:
                 format_image_path_list.append(image_path)
             else:

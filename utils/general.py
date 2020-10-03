@@ -30,6 +30,7 @@ from utils.torch_utils import is_parallel
 torch.set_printoptions(linewidth=320, precision=5, profile='long')
 np.set_printoptions(linewidth=320, formatter={'float_kind': '{:11.5g}'.format})  # format short g, %precision=5
 matplotlib.rc('font', **{'size': 11})
+plt.rcParams['font.family'] = 'IPAexGothic'
 
 # Prevent OpenCV from multithreading (to use PyTorch DataLoader)
 cv2.setNumThreads(0)
