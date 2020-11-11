@@ -52,6 +52,8 @@ class MakeGroundTruth:
     def write_annotation_path_image(self, file_path):
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         image_path = '../../{}/images/test/{}.jpg'.format(self.task_name, file_name)
+        if not os.path.exists(image_path):
+            image_path = '../../{}/images/test/{}.JPG'.format(self.task_name, file_name)
         img = cv2.imread(image_path)
         height, width = img.shape[0], img.shape[1]
         with open('./input/billboard_{}/ground-truth/{}.txt'.format(self.label_name, file_name), 'w',
@@ -65,13 +67,16 @@ class MakeGroundTruth:
                     top = int(float(y_center) * height - (float(h) * height) / 2)
                     right = int(float(x_center) * width + (float(w) * width) / 2)
                     bottom = int(float(y_center) * height + (float(h.replace('\n', '')) * height) / 2)
-                    text_file.write('{} {} {} {} {}\n'.format(label, left, top, right, bottom))
+                    if self.label_name in ['advertiser', 'product']:
+                        text_file.write('{} {} {} {} {}\n'.format(int(label_index), left, top, right, bottom))
+                    else:
+                        text_file.write('{} {} {} {} {}\n'.format(label, left, top, right, bottom))
 
 
 if __name__ in '__main__':
-    class_list, label_name = LabelList.Adv.value
+    class_list, label_name = LabelList.Subway_Media.value
     # advertiser, media, product
-    task_name = 'advertiser'
+    task_name = 'subway_media'
 
     os.system('rm -rf ./input/billboard_' + label_name + '/ground-truth/*')
 

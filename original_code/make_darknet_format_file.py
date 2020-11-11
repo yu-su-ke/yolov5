@@ -4,6 +4,8 @@ import random
 from tqdm import tqdm
 from PIL import Image
 from PIL import ImageFile
+from urllib.parse import unquote
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from class_list import LabelList
@@ -16,7 +18,8 @@ class MakeDarknetFile:
         self.task_name = task_name
 
     def main(self):
-        with open('../../{}/model_data/billboard_{}.txt'.format(self.task_name, self.label_name), 'r', encoding='utf-8') as billboard:
+        with open('../../{}/model_data/billboard_{}.txt'.format(self.task_name, self.label_name), 'r',
+                  encoding='utf-8') as billboard:
             image_path_list = billboard.readlines()
             format_image_path_list = self.delete_zero_data(image_path_list)
             print('pytorch_yolov3用のテキストファイルを作成する')
@@ -36,13 +39,16 @@ class MakeDarknetFile:
         with open(save_path, 'w', encoding='utf-8') as save_file:
             for i in range(1, len(element_list)):
                 x1, y1, x2, y2, label = element_list[i].split(',')
-                x_center, y_center, width, height = self.resize_point(element_list[0], int(x1), int(y1), int(x2), int(y2))
+                x_center, y_center, width, height = self.resize_point(element_list[0], int(x1), int(y1), int(x2),
+                                                                      int(y2))
                 # label = class_list.index(label)
                 save_file.write('{} {} {} {} {}\n'.format(label, x_center, y_center, width, height))
 
-
     def resize_point(self, image_path, x1, y1, x2, y2):
-        img = Image.open(image_path)
+        try:
+            img = Image.open(image_path)
+        except FileNotFoundError:
+            img = Image.open(unquote(image_path))
         img_width, img_height = img.size
         width = (x2 - x1) / img_width
         height = (y2 - y1) / img_height
@@ -50,7 +56,6 @@ class MakeDarknetFile:
         y_center = y1 / img_height + height / 2
 
         return x_center, y_center, width, height
-
 
     # ラベルの無い行を削除する
     def delete_zero_data(self, image_path_list):
@@ -67,12 +72,13 @@ class MakeDarknetFile:
 
 
 if __name__ in '__main__':
-    class_list, label_name = LabelList.Adv.value
-    task_name = 'advertiser'
+    class_list, label_name = LabelList.Subway_Media.value
+    task_name = 'subway_media'
 
     save_path = '../../{}/labels/{}/'.format(label_name, label_name)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
     os.system('rm {}'.format(os.path.join(save_path, '*')))
 
     make_darknet_file = MakeDarknetFile(class_list, label_name, task_name)
     make_darknet_file.main()
-

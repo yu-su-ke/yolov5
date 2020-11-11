@@ -15,11 +15,11 @@ from scripts.extra.intersect_gt_and_dr import adjust_ground_and_detect
 from class_list import LabelList
 
 
-_, label_type = LabelList.Adv.value
+class_list, label_type = LabelList.Subway_Media.value
 
 today = datetime.datetime.fromtimestamp(time.time())
 format_today = today.strftime('%Y_%m_%d_%H_%M_%S')
-save_path = 'billboard_{}_random_image/{}'.format(label_type, format_today)
+save_path = 'billboard_{}_random_label/{}'.format(label_type, format_today)
 
 
 # ground_truthとdetect両方に存在しないファイルを削除する. これを回すとground-truthがnullになるので最初だけ回す
@@ -88,6 +88,7 @@ draw_plot = False
 if not args.no_plot:
     try:
         import matplotlib.pyplot as plt
+        plt.rcParams["font.family"] = "IPAexGothic"
 
         draw_plot = True
     except ImportError:
@@ -426,6 +427,9 @@ for txt_file in ground_truth_files_list:
                 is_difficult = True
             else:
                 class_name, left, top, right, bottom = line.split()
+            if label_type in ['advertiser', 'product']:
+                class_name = class_list[int(class_name)]
+
         except ValueError:
             error_msg = "Error: File " + txt_file + " in the wrong format.\n"
             error_msg += " Expected: <class_name> <left> <top> <right> <bottom> ['difficult']\n"
@@ -519,6 +523,8 @@ for class_index, class_name in enumerate(gt_classes):
         for line in lines:
             try:
                 tmp_class_name, confidence, left, top, right, bottom = line.split()
+                if label_type in ['advertiser', 'product']:
+                    tmp_class_name = class_list[int(tmp_class_name)]
             except ValueError:
                 error_msg = "Error: File " + txt_file + " in the wrong format.\n"
                 error_msg += " Expected: <class_name> <confidence> <left> <top> <right> <bottom>\n"
@@ -786,6 +792,8 @@ for txt_file in dr_files_list:
     lines_list = file_lines_to_list(txt_file)
     for line in lines_list:
         class_name = line.split()[0]
+        if label_type in ['advertiser', 'product']:
+            class_name = class_list[int(class_name)]
         # check if class is in the ignore list, if yes skip
         if class_name in args.ignore:
             continue

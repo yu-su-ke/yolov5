@@ -10,6 +10,8 @@ class LabelList(Enum):
     Media = [['plane', 'sleeve', 'wall', 'roof', 'banner', 'standing', 'signage', 'vehicle',
               'subway', 'pillar'], 'all']
 
+    Subway_Media = [['above-door', 'above-window', 'banner', 'door-side', 'signage', 'sticker', 'strap'], "subway_media"]
+
     Place = [['indoor', 'outdoor', 'subway'], 'place']
 
     Genre = [
@@ -26,3 +28,10 @@ class LabelList(Enum):
             '大塚食品株式会社', '日本コカ・コーラ株式会社', '花王株式会社', 'Apple Japan合同会社', '株式会社早稲田アカデミー', 'Mastercard',
             '株式会社NTTドコモ', 'KDDI株式会社', 'ソフトバンク株式会社', 'シチズン時計株式会社', 'LVMHウォッチ・ジュエリージャパン株式会社',
             '大正製薬株式会社', '株式会社龍角散'], 'advertiser']
+
+    Product = [
+        ['Audi Q8', 'BTS', 'CELINE', 'CITIZEN xC', 'GINZA', 'Galaxy S20 5G', 'HUBLOT', 'LOEWE', 'MATCH', "MEN'S TBC",
+         'RAIZIN', 'Red Bullエナジードリンク', 'SK-Ⅱ フェイシャルトリートメントエッセンス', 'The CHOYA', 'YouTube', 'iPhone 11',
+         'iPhone 11 Pro', 'iPhone SE', 'inゼリー', 'エステティックTBC', 'オロナミンC', 'グランブルーファンタジー', 'コカ・コーラ',
+         'ニベア', 'プレミアムモルツ', 'ヘアードライヤー ナノケア', 'ポカリスエット', 'マイナビ就職', 'ライオン・キング', 'リポビタン',
+         '一番搾り', '湖池屋プライドポテト', '龍角散ダイレクト'], 'product']

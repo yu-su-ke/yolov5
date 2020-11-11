@@ -1,7 +1,7 @@
 import glob
 import os
 
-test = glob.glob(os.path.join('../../annotation_data/advertiser_annotation/03_C_Choya_Umeshu/', '*.json'))
+test = glob.glob(os.path.join('/home/mokky/Program/annotation_data/advertiser_annotation/22_C_Apple_Japan', '*.json'))
 
 for t in test:
     with open(t, 'r', encoding='utf-8') as f:

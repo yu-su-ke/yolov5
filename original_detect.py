@@ -124,12 +124,15 @@ def detect(save_img=False):
                                                   image_name
                         with open(save_detect_result_path + '.txt', 'a') as f:
                             # f.write(('%g ' * 6 + '\n') % (label, conf, x1, y1, x2, y2 ))  # label format
-                            f.write('{} {} {} {} {} {}\n'.format(label, conf, x1, y1, x2, y2))
+                            if label_type in ['advertiser', 'product']:
+                                f.write('{} {} {} {} {} {}\n'.format(int(cls.item()), conf, x1, y1, x2, y2))
+                            else:
+                                f.write('{} {} {} {} {} {}\n'.format(label, conf, x1, y1, x2, y2))
 
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
-                cut_image(detection_image_point_list, source, image_name)  # cut out detection range
+                # cut_image(detection_image_point_list, source, image_name)  # cut out detection range
             # 画像中から広告を一切検出できなかった画像を記録
             else:
                 with open('./not_detect_image.txt', 'a', encoding='utf-8') as text_file:

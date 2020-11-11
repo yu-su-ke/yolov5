@@ -27,10 +27,10 @@ def test(data,
          save_json=False,
          single_cls=False,
          augment=False,
-         verbose=False,
+         verbose=True,
          model=None,
          dataloader=None,
-         save_dir='',
+         save_dir='inference',
          merge=False,
          save_txt=False):
     # Initialize/load model and set device
@@ -85,7 +85,7 @@ def test(data,
     seen = 0
     names = model.names if hasattr(model, 'names') else model.module.names
     coco91class = coco80_to_coco91_class()
-    s = ('%20s' + '%12s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@.5', 'mAP@.5:.95')
+    s = ('%20s' + '%12s' * 7) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@.5', 'mAP@.5:.95', 'F1')
     p, r, f1, mp, mr, map50, map, t0, t1 = 0., 0., 0., 0., 0., 0., 0., 0., 0.
     loss = torch.zeros(3, device=device)
     jdict, stats, ap, ap_class = [], [], [], []
@@ -197,19 +197,19 @@ def test(data,
     if len(stats) and stats[0].any():
         p, r, ap, f1, ap_class = ap_per_class(*stats)
         p, r, ap50, ap = p[:, 0], r[:, 0], ap[:, 0], ap.mean(1)  # [P, R, AP@0.5, AP@0.5:0.95]
-        mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
+        mp, mr, map50, map, mf1 = p.mean(), r.mean(), ap50.mean(), ap.mean(), f1.mean()
         nt = np.bincount(stats[3].astype(np.int64), minlength=nc)  # number of targets per class
     else:
         nt = torch.zeros(1)
 
     # Print results
-    pf = '%20s' + '%12.3g' * 6  # print format
-    print(pf % ('all', seen, nt.sum(), mp, mr, map50, map))
+    pf = '%20s' + '%12.3g' * 7  # print format
+    print(pf % ('all', seen, nt.sum(), mp, mr, map50, map, mf1))
 
     # Print results per class
-    if verbose and nc > 1 and len(stats):
-        for i, c in enumerate(ap_class):
-            print(pf % (names[c], seen, nt[c], p[i], r[i], ap50[i], ap[i]))
+    # if verbose and nc > 1 and len(stats):
+    for i, c in enumerate(ap_class):
+        print(pf % (names[c], seen, nt[c], p[i], r[i], ap50[i], ap[i], 0))
 
     # Print speeds
     t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (imgsz, imgsz, batch_size)  # tuple
