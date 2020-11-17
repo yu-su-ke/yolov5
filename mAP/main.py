@@ -19,7 +19,7 @@ class_list, label_type = LabelList.Subway_Media.value
 
 today = datetime.datetime.fromtimestamp(time.time())
 format_today = today.strftime('%Y_%m_%d_%H_%M_%S')
-save_path = 'billboard_{}_random_label/{}'.format(label_type, format_today)
+save_path = 'billboard_{}_random_image/{}'.format(label_type, format_today)
 
 
 # ground_truthとdetect両方に存在しないファイルを削除する. これを回すとground-truthがnullになるので最初だけ回す
@@ -721,6 +721,12 @@ with open(results_files_path + "/results.txt", 'w') as results_file:
         for idx, val in enumerate(tp):
             prec[idx] = float(tp[idx]) / (fp[idx] + tp[idx])
         # print(prec)
+
+        """
+        original code (YOLOv5に評価方法を合わせる)
+        """
+        rec.append(1.00)
+        prec.append(prec[-1])
 
         ap, mrec, mprec = voc_ap(rec[:], prec[:])
         sum_AP += ap

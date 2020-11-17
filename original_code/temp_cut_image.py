@@ -25,7 +25,6 @@ def cut_image(detection_image_point_list, source, image_name):
     cv2.imwrite('{}/{}.jpg'.format(save_directory, image_name), img1)
 
 
-
 def calculate_max_area(detection_image_point_list):
     """複数の検出範囲の中から最も面積の大きいものを代表とする
 

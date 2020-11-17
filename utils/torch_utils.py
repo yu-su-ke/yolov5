@@ -8,12 +8,12 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision.models as models
+import torchvision
 
 logger = logging.getLogger(__name__)
 
 
-def init_seeds(seed=0):
+def init_torch_seeds(seed=0):
     torch.manual_seed(seed)
 
     # Speed-reproducibility tradeoff https://pytorch.org/docs/stable/notes/randomness.html
@@ -39,14 +39,13 @@ def select_device(device='', batch_size=None):
         if ng > 1 and batch_size:  # check that batch_size is compatible with device_count
             assert batch_size % ng == 0, 'batch-size %g not multiple of GPU count %g' % (batch_size, ng)
         x = [torch.cuda.get_device_properties(i) for i in range(ng)]
-        s = 'Using CUDA '
+        s = f'Using torch {torch.__version__} '
         for i in range(0, ng):
             if i == 1:
                 s = ' ' * len(s)
-            logger.info("%sdevice%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
-                        (s, i, x[i].name, x[i].total_memory / c))
+            logger.info("%sCUDA:%g (%s, %dMB)" % (s, i, x[i].name, x[i].total_memory / c))
     else:
-        logger.info('Using CPU')
+        logger.info(f'Using torch {torch.__version__} CPU')
 
     logger.info('')  # skip a line
     return torch.device('cuda:0' if cuda else 'cpu')
@@ -74,7 +73,7 @@ def initialize_weights(model):
         elif t is nn.BatchNorm2d:
             m.eps = 1e-3
             m.momentum = 0.03
-        elif t in [nn.LeakyReLU, nn.ReLU, nn.ReLU6]:
+        elif t in [nn.Hardswish, nn.LeakyReLU, nn.ReLU, nn.ReLU6]:
             m.inplace = True
 
 
@@ -104,28 +103,28 @@ def prune(model, amount=0.3):
 
 
 def fuse_conv_and_bn(conv, bn):
-    # https://tehnokv.com/posts/fusing-batchnorm-and-conv/
-    with torch.no_grad():
-        # init
-        fusedconv = nn.Conv2d(conv.in_channels,
-                              conv.out_channels,
-                              kernel_size=conv.kernel_size,
-                              stride=conv.stride,
-                              padding=conv.padding,
-                              groups=conv.groups,
-                              bias=True).to(conv.weight.device)
+    # Fuse convolution and batchnorm layers https://tehnokv.com/posts/fusing-batchnorm-and-conv/
 
-        # prepare filters
-        w_conv = conv.weight.clone().view(conv.out_channels, -1)
-        w_bn = torch.diag(bn.weight.div(torch.sqrt(bn.eps + bn.running_var)))
-        fusedconv.weight.copy_(torch.mm(w_bn, w_conv).view(fusedconv.weight.size()))
+    # init
+    fusedconv = nn.Conv2d(conv.in_channels,
+                          conv.out_channels,
+                          kernel_size=conv.kernel_size,
+                          stride=conv.stride,
+                          padding=conv.padding,
+                          groups=conv.groups,
+                          bias=True).requires_grad_(False).to(conv.weight.device)
 
-        # prepare spatial bias
-        b_conv = torch.zeros(conv.weight.size(0), device=conv.weight.device) if conv.bias is None else conv.bias
-        b_bn = bn.bias - bn.weight.mul(bn.running_mean).div(torch.sqrt(bn.running_var + bn.eps))
-        fusedconv.bias.copy_(torch.mm(w_bn, b_conv.reshape(-1, 1)).reshape(-1) + b_bn)
+    # prepare filters
+    w_conv = conv.weight.clone().view(conv.out_channels, -1)
+    w_bn = torch.diag(bn.weight.div(torch.sqrt(bn.eps + bn.running_var)))
+    fusedconv.weight.copy_(torch.mm(w_bn, w_conv).view(fusedconv.weight.size()))
 
-        return fusedconv
+    # prepare spatial bias
+    b_conv = torch.zeros(conv.weight.size(0), device=conv.weight.device) if conv.bias is None else conv.bias
+    b_bn = bn.bias - bn.weight.mul(bn.running_mean).div(torch.sqrt(bn.running_var + bn.eps))
+    fusedconv.bias.copy_(torch.mm(w_bn, b_conv.reshape(-1, 1)).reshape(-1) + b_bn)
+
+    return fusedconv
 
 
 def model_info(model, verbose=False):
@@ -143,7 +142,7 @@ def model_info(model, verbose=False):
         from thop import profile
         flops = profile(deepcopy(model), inputs=(torch.zeros(1, 3, 64, 64),), verbose=False)[0] / 1E9 * 2
         fs = ', %.1f GFLOPS' % (flops * 100)  # 640x640 FLOPS
-    except:
+    except ImportError:
         fs = ''
 
     logger.info(
@@ -152,16 +151,14 @@ def model_info(model, verbose=False):
 
 def load_classifier(name='resnet101', n=2):
     # Loads a pretrained model reshaped to n-class output
-    model = models.__dict__[name](pretrained=True)
+    model = torchvision.models.__dict__[name](pretrained=True)
 
-    # Display model properties
-    input_size = [3, 224, 224]
-    input_space = 'RGB'
-    input_range = [0, 1]
-    mean = [0.485, 0.456, 0.406]
-    std = [0.229, 0.224, 0.225]
-    for x in ['input_size', 'input_space', 'input_range', 'mean', 'std']:
-        print(x + ' =', eval(x))
+    # ResNet model properties
+    # input_size = [3, 224, 224]
+    # input_space = 'RGB'
+    # input_range = [0, 1]
+    # mean = [0.485, 0.456, 0.406]
+    # std = [0.229, 0.224, 0.225]
 
     # Reshape output to n classes
     filters = model.fc.weight.shape[1]

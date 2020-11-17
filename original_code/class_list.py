@@ -8,7 +8,7 @@ class LabelList(Enum):
     ONE = [['billboard'], 'one']
 
     Media = [['plane', 'sleeve', 'wall', 'roof', 'banner', 'standing', 'signage', 'vehicle',
-              'subway', 'pillar'], 'all']
+              'subway', 'pillar'], 'media']
 
     Subway_Media = [['above-door', 'above-window', 'banner', 'door-side', 'signage', 'sticker', 'strap'], "subway_media"]
 
