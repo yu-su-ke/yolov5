@@ -3,10 +3,10 @@ import os
 import shutil
 
 from class_list import LabelList
-class_list, label_name = LabelList.Subway_Media.value
+class_list, label_name = LabelList.Adv.value
 
 
-file_path = '../runs/test/billboard_subway_media_random_image_5x/detections_val2017_best_results.json'
+file_path = '/home/mokky/Program/yolov5/runs/test/billboard_advertiser_random_label_5x/detections_val2017_best_results.json'
 detection_result_path = './input/billboard_{}/detection-results'.format(label_name)
 shutil.rmtree(detection_result_path)
 os.makedirs(detection_result_path)

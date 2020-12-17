@@ -9,18 +9,19 @@ import shutil
 import sys
 import time
 
+import cv2
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
+from tqdm import tqdm
 
 from scripts.extra.intersect_gt_and_dr import adjust_ground_and_detect
 from class_list import LabelList
 
-
-class_list, label_type = LabelList.Subway_Media.value
+class_list, label_type = LabelList.Adv.value
 
 today = datetime.datetime.fromtimestamp(time.time())
 format_today = today.strftime('%Y_%m_%d_%H_%M_%S')
-save_path = 'billboard_{}_random_image/{}'.format(label_type, format_today)
-
+save_path = 'billboard_{}_random_directory/{}'.format(label_type, format_today)
 
 # ground_truthとdetect両方に存在しないファイルを削除する. これを回すとground-truthがnullになるので最初だけ回す
 # adjust_ground_and_detect(label_type)
@@ -88,6 +89,7 @@ draw_plot = False
 if not args.no_plot:
     try:
         import matplotlib.pyplot as plt
+
         plt.rcParams["font.family"] = "IPAexGothic"
 
         draw_plot = True
@@ -284,7 +286,7 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title, x_label, out
     sorted_dic_by_value = sorted(dictionary.items(), key=operator.itemgetter(1))
     # unpacking the list of tuples into two lists
     sorted_keys, sorted_values = zip(*sorted_dic_by_value)
-    # 
+    #
     if true_p_bar != "":
         """
          Special case to draw in:
@@ -348,7 +350,7 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title, x_label, out
     dpi = fig.dpi
     height_pt = n_classes * (tick_font_size * 1.4)  # 1.4 (some spacing)
     height_in = height_pt / dpi
-    # compute the required figure height 
+    # compute the required figure height
     top_margin = 0.15  # in percentage of the figure height
     bottom_margin = 0.05  # in percentage of the figure height
     figure_height = height_in / (1 - top_margin - bottom_margin)
@@ -546,6 +548,11 @@ for class_index, class_name in enumerate(gt_classes):
 sum_AP = 0.0
 ap_dictionary = {}
 lamr_dictionary = {}
+"""
+ Original code
+ 画像内でミスの回数を計算するための辞書
+"""
+image_correct_miss_dict = {}
 # open file to store the results
 with open(results_files_path + "/results.txt", 'w') as results_file:
     results_file.write("# AP and precision/recall per class\n")
@@ -566,6 +573,10 @@ with open(results_files_path + "/results.txt", 'w') as results_file:
         fp = [0] * nd
         for idx, detection in enumerate(dr_data):
             file_id = detection["file_id"]
+            if file_id not in image_correct_miss_dict.keys():
+                image_correct_miss_dict[file_id] = {}
+                image_correct_miss_dict[file_id]['TP'] = 0
+                image_correct_miss_dict[file_id]['FP'] = 0
             if show_animation:
                 # find ground truth image
                 ground_truth_img = glob.glob1(IMG_PATH, file_id + ".*")
@@ -597,6 +608,8 @@ with open(results_files_path + "/results.txt", 'w') as results_file:
             # load detected object bounding-box
             bb = [float(x) for x in detection["bbox"].split()]
             for obj in ground_truth_data:
+                if 'gt_num' not in image_correct_miss_dict[file_id]:
+                    image_correct_miss_dict[file_id]['gt_num'] = len(ground_truth_data)
                 # look for a class_name match
                 if obj["class_name"] == class_name:
                     bbgt = [float(x) for x in obj["bbox"].split()]
@@ -633,16 +646,24 @@ with open(results_files_path + "/results.txt", 'w') as results_file:
                             f.write(json.dumps(ground_truth_data))
                         if show_animation:
                             status = "MATCH!"
+
+                        image_correct_miss_dict[file_id]['TP'] += 1
+
                     else:
                         # false positive (multiple detection)
                         fp[idx] = 1
                         if show_animation:
                             status = "REPEATED MATCH!"
+
+                        image_correct_miss_dict[file_id]['FP'] += 1
+
             else:
                 # false positive
                 fp[idx] = 1
                 if ovmax > 0:
                     status = "INSUFFICIENT OVERLAP"
+
+                image_correct_miss_dict[file_id]['FP'] += 1
 
             """
              Draw image to show animation
@@ -723,7 +744,8 @@ with open(results_files_path + "/results.txt", 'w') as results_file:
         # print(prec)
 
         """
-        original code (YOLOv5に評価方法を合わせる)
+         Original code
+         YOLOv5に評価方法を合わせる
         """
         rec.append(1.00)
         prec.append(prec[-1])
@@ -786,7 +808,7 @@ with open(results_files_path + "/results.txt", 'w') as results_file:
     print(text)
 
 # remove the temp_files directory
-shutil.rmtree(TEMP_FILES_PATH)
+# shutil.rmtree(TEMP_FILES_PATH)
 
 """
  Count total of detection-results
@@ -935,3 +957,93 @@ if draw_plot:
         plot_color,
         ""
     )
+
+"""
+検出漏れがある画像を生成
+"""
+
+
+def add_margin(image, top, right, bottom, left, color):
+    # height, width = image.shape[:2]
+    width, height = image.size
+    new_width = width + right + left
+    new_height = height + top + bottom
+    # result = np.zeros((new_height, new_width, 3))
+    # result += color[::-1]  # RGBで青指定
+    # result[top:top + height, left:left + width] = image
+    result = Image.new(image.mode, (new_width, new_height), color)
+    result.paste(image, (left, top))
+
+    return result
+
+
+save_image_directory = './bad_detect'
+if os.path.exists(save_image_directory):
+    shutil.rmtree(save_image_directory)
+os.makedirs(save_image_directory)
+
+# print(image_correct_miss_dict)
+font_type = '/home/mokky/.pyenv/versions/advertisement_3.7.4/lib/python3.7/site-packages/matplotlib/mpl-data/fonts/ttf/ipaexg.ttf'
+fontPIL = ImageFont.truetype(font_type, 35)
+
+count = 0
+for k, v in tqdm(image_correct_miss_dict.items()):
+    try:
+        recall = v['TP'] / v['gt_num']
+        precision = v['TP'] / (v['FP'] + v['TP'])
+        f1 = 2 * recall * precision / recall + precision
+    except ZeroDivisionError:
+        pass
+    except KeyError:
+        print(k)
+        continue
+
+    if v['gt_num'] != v['TP']:
+        image_path = glob.glob('/home/mokky/Program/{}/images/test/{}.*'.format(label_type, k))[0]
+        # image = cv2.imread(image_path)
+        image = Image.open(image_path)
+        draw = ImageDraw.Draw(image)
+        # shutil.copy(image_path, './bad_detect/')
+        with open(TEMP_FILES_PATH + "/" + k + "_ground_truth.json", 'r') as json_file:
+            bounding_list = json.load(json_file)
+        for bounding in bounding_list:
+            if not bounding['used']:
+                x1, y1, x2, y2 = [int(i) for i in bounding['bbox'].split(' ')]
+                # 文字列を描画した際.Subway_の大きさを取得
+                # (w, h), baseline = cv2.getTextSize(bounding['class_name'], cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2)
+                w, h = draw.textsize(text=bounding['class_name'], font=fontPIL)
+
+                # 対象のbounding_box
+                # cv2.rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), thickness=5)
+                draw.rectangle((x1, y1, x2, y2), outline=(0, 0, 255), width=5)
+
+                # ラベルの背景色
+                # cv2.rectangle(image, (x1, y1 - 30), (x1 + w, y1), (255, 0, 0), thickness=-1)
+                draw.rectangle((x1, y1 - 35, x1 + w, y1), fill=(0, 0, 255))
+
+                # ラベル描画
+                # cv2.putText(image, bounding['class_name'], (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255),
+                #             thickness=3)
+                draw.text(xy=(x1, y1 - 35), text=bounding['class_name'], fill=(255, 255, 255), font=fontPIL)
+
+        # 画像余白作成
+        # height, width = image.shape[:2]
+        width, height = image.size
+        if height > 1600 or width > 1320 or height < 1600 or width < 1320:
+            # image = cv2.resize(image, (1600, 1320))
+            image = image.resize((1600, 1320))
+        top, right, bottom, left = 60, 0, 60, 0
+        new_image = add_margin(image, top, right, bottom, left, (128, 128, 128))
+
+        # 画像番号の表示
+        # cv2.putText(new_image, str(count), (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255, 255, 255), thickness=2)
+        new_draw = ImageDraw.Draw(new_image)
+        fontPIL = ImageFont.truetype(font_type, 45)
+        new_draw.text(xy=(5, 5), text=str(count), fill=(255, 255, 255), font=fontPIL)
+        count += 1
+
+        # 画像の保存
+        # cv2.imwrite('{}/{}.jpg'.format(save_image_directory, k), new_image)
+        new_image.save('{}/{}.jpg'.format(save_image_directory, k), quality=95)
+
+shutil.rmtree(TEMP_FILES_PATH)

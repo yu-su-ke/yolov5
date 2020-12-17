@@ -104,7 +104,7 @@ class MakeGroundTruth:
 
 
 if __name__ in '__main__':
-    class_list, label_name = LabelList.Subway_Media.value
+    class_list, label_name = LabelList.Adv.value
     # advertiser, media, product
 
     ground_truth_path = './input/billboard_' + label_name + '/ground-truth'

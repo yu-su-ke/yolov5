@@ -28,6 +28,7 @@ def test(data,
          single_cls=False,
          augment=False,
          verbose=True,
+         task='val',
          model=None,
          dataloader=None,
          save_dir=Path(''),  # for saving images
@@ -230,9 +231,10 @@ def test(data,
 
     # Print results per class
     # if verbose and nc > 1 and len(stats):
-    for i, c in enumerate(ap_class):
-        original_f1 = (2 * r[i] * p[i]) / (r[i] + p[i])
-        print(pf % (names[c], seen, nt[c], p[i], r[i], original_f1, ap50[i], ap[i]))
+    if task == 'test':
+        for i, c in enumerate(ap_class):
+            original_f1 = (2 * r[i] * p[i]) / (r[i] + p[i])
+            print(pf % (names[c], seen, nt[c], p[i], r[i], original_f1, ap50[i], ap[i]))
 
     # Print speeds
     t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (imgsz, imgsz, batch_size)  # tuple
@@ -307,6 +309,7 @@ if __name__ == '__main__':
              opt.single_cls,
              opt.augment,
              opt.verbose,
+             opt.task,
              save_dir=Path(opt.save_dir),
              save_txt=opt.save_txt,
              save_conf=opt.save_conf,
