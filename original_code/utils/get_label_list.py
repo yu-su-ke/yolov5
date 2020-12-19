@@ -18,8 +18,15 @@ def main(task_name, annotation_directory):
                 label = region['tags'][0] if region['tags'][0] != 'main' else region['tags'][1]
                 if label not in label_list:
                     label_list.append(label)
-    save_directory = {task_name: sorted(label_list)}
-    with open('label_name/{}.yaml'.format(task_name), 'w', encoding='utf-8') as f:
+    save_directory = {
+        'train': '../{}/images/train'.format(task_name),
+        'val': '../{}/images/val'.format(task_name),
+        'test': '../{}/images/test'.format(task_name),
+        'nc': len(label_list),
+        'names': sorted(label_list)
+        }
+
+    with open('../data/{}.yaml'.format(task_name), 'w', encoding='utf-8') as f:
         yaml.dump(save_directory, f, encoding='utf-8', allow_unicode=True)
 
 if __name__ in '__main__':

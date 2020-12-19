@@ -14,10 +14,13 @@ class ConfirmAnnotation:
         self.label_list = label_list
 
         self.base_path = '../../annotation_data/{}_annotation/'.format(self.task_name)
+        self.save_directory = '../../{}/model_data/'.format(self.task_name)
 
     def main(self):
         directory_path_list = glob.glob(os.path.join(self.base_path, '*'))
-        with open('../../{}/model_data/billboard_{}.txt'.format(self.task_name, self.task_name), 'w', encoding='utf-8') as text_file:
+        if  not os.path.exists(self.save_directory):
+            os.makedirs(self.save_directory)
+        with open(os.path.join(self.save_directory, 'billboard_{}.txt'.format(self.task_name)), 'w', encoding='utf-8') as text_file:
             for directory_path in directory_path_list:
                 # パスの半角スペースを_に変換
                 new_directory_path = directory_path.replace(' ', '_')
@@ -78,8 +81,8 @@ if __name__ in '__main__':
     opt = parser.parse_args()
     task_name = opt.task_name
 
-    with open('./label_name/{}.yaml'.format(task_name)) as f:
-        label_list = yaml.safe_load(f)[task_name]
+    with open('../data/{}.yaml'.format(task_name)) as f:
+        label_list = yaml.safe_load(f)['names']
 
     ca = ConfirmAnnotation(task_name, label_list)
     ca.main()

@@ -1,4 +1,4 @@
-advertiser:
+names:
 - Apple Japan合同会社
 - KDDI株式会社
 - LVMHウォッチ・ジュエリージャパン株式会社
@@ -37,3 +37,7 @@ advertiser:
 - 株式会社龍角散
 - 森永製菓株式会社
 - 花王株式会社
+nc: 38
+test: ../advertiser/images/test
+train: ../advertiser/images/train
+val: ../advertiser/images/val

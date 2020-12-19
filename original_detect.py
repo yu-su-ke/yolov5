@@ -17,16 +17,17 @@ from utils.general import (
     xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
-from original_code.class_list import LabelList  # オリジナル
 from original_code.temp_cut_image import cut_image
-
-class_list, label_type = LabelList.Adv.value
 
 
 def detect(save_img=False):
-    out, source, weights, view_img, save_txt, imgsz = \
-        opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
+    out, source, weights, view_img, save_txt, imgsz, task_name = \
+        opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, opt.task_name
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
+
+    # label_listの読み込み
+    with open('../data/{}.yaml'.format(task_name)) as f:
+        label_list = yaml.safe_load(f)['names']
 
     # Initialize
     set_logging()
@@ -115,16 +116,16 @@ def detect(save_img=False):
                 for *xyxy, conf, cls in reversed(det):
                     image_name = os.path.splitext(os.path.basename(path))[0]
                     x1, y1, x2, y2 = [int(point.item()) for point in xyxy]
-                    label = class_list[int(cls.item())]
+                    label = label_list[int(cls.item())]
                     detection_image_point_list.append([x1, y1, x2, y2])
                     detection_image_result.append([label, conf.item()])
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                        save_detect_result_path = './mAP/input/billboard_{}/detection-results/'.format(label_type) + \
+                        save_detect_result_path = './mAP/input/{}/detection-results/'.format(task_name) + \
                                                   image_name
                         with open(save_detect_result_path + '.txt', 'a') as f:
                             # f.write(('%g ' * 6 + '\n') % (label, conf, x1, y1, x2, y2 ))  # label format
-                            if label_type in ['advertiser', 'product']:
+                            if task_name in ['advertiser', 'product']:
                                 f.write('{} {} {} {} {} {}\n'.format(int(cls.item()), conf, x1, y1, x2, y2))
                             else:
                                 f.write('{} {} {} {} {} {}\n'.format(label, conf, x1, y1, x2, y2))
@@ -135,8 +136,9 @@ def detect(save_img=False):
                 # cut_image(detection_image_point_list, source, image_name)  # cut out detection range
             # 画像中から広告を一切検出できなかった画像を記録
             else:
-                with open('./not_detect_image.txt', 'a', encoding='utf-8') as text_file:
-                    text_file.write(path + '\n')
+                shutil.copy(path, './not_detect_test/')
+                # with open('./not_detect_image.txt', 'a', encoding='utf-8') as text_file:
+                #     text_file.write(path + '\n')
 
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))
@@ -192,13 +194,20 @@ if __name__ == '__main__':
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     parser.add_argument('--update', action='store_true', help='update all models')
+    parser.add_argument('--task-name', required=True, type=str, help='ex. advertisr, media, product, ...')
     opt = parser.parse_args()
     print(opt)
 
-    save_path = './mAP/input/billboard_{}/detection-results/*'.format(label_type)
+    # mAP用の保存ディレクトリの用意
+    save_path = './mAP/input/billboard_{}/detection-results/*'.format(opt.task_name)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     os.system('rm -rf {}'.format(save_path))
+
+    # 画像中から広告を一切検出できなかった画像を記録するディレクトリの用意
+    shutil.rmtree('./not_detect_test/')
+    if not os.path.isdir('./not_detect_test/'):
+        os.makedirs('./not_detect_test/'
 
     with torch.no_grad():
         if opt.update:  # update all models (to fix SourceChangeWarning)
