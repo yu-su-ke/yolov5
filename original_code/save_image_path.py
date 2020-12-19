@@ -1,24 +1,23 @@
+import argparse
 import glob
 import json
 import os
 
-from class_list import LabelList
+import yaml
+
+from utils import count_label_num
 
 
 class ConfirmAnnotation:
-    def __init__(self, label_list, label_name, task_name):
-        self.label_list = label_list
-        self.label_name = label_name
+    def __init__(self, task_name, label_list):
         self.task_name = task_name
+        self.label_list = label_list
 
         self.base_path = '../../annotation_data/{}_annotation/'.format(self.task_name)
-        self.label_dictionary = {}
-
-        self.label_count_dictionary = {}
 
     def main(self):
         directory_path_list = glob.glob(os.path.join(self.base_path, '*'))
-        with open('../../{}/model_data/billboard_{}.txt'.format(self.task_name, self.label_name), 'w', encoding='utf-8') as text_file:
+        with open('../../{}/model_data/billboard_{}.txt'.format(self.task_name, self.task_name), 'w', encoding='utf-8') as text_file:
             for directory_path in directory_path_list:
                 # パスの半角スペースを_に変換
                 new_directory_path = directory_path.replace(' ', '_')
@@ -28,12 +27,10 @@ class ConfirmAnnotation:
                     json_file = open(file_path)
                     asset = json.load(json_file)
                     image_path = os.path.join(new_directory_path, asset['asset']['name'])
-
                     self.write_annotation_path_label(asset, image_path, text_file)
-                    self.count_label(asset, image_path)
-        print(sorted(self.label_dictionary.items(), key=lambda x: x[1], reverse=True))
-        # class_list.py用のクラスの確認
-        print(sorted(self.label_dictionary.keys()))
+        _, label_count_dictionary = count_label_num.prepare_image_label(self.base_path)
+        print(sorted(label_count_dictionary.items(), key=lambda x: x[1], reverse=True))
+        
 
     def write_annotation_path_label(self, asset, image_path, text_file):
         """trainデータのためのファイルパスの記録
@@ -46,17 +43,6 @@ class ConfirmAnnotation:
         Returns: None
 
         """
-        # print(image_path)
-
-        # label = asset['regions'][0]['tags'][0]
-        # if label not in self.label_count_dictionary.keys():
-        #     self.label_count_dictionary[label] = 1
-        # else:
-        #     print(label, self.label_count_dictionary[label])
-        #     self.label_count_dictionary[label] += 1
-        # if self.label_count_dictionary[label] > 30:
-        #    return
-
         text_file.write(image_path + ' ')
         for region in asset['regions']:
             label = self.convert_label(region['tags'])
@@ -69,9 +55,8 @@ class ConfirmAnnotation:
             text_file.write('{},{},{},{},{} '.format(x1, y1, x2, y2, label))
         text_file.write('\n')
 
-    # ラベルを数字にコンバート
     def convert_label(self, tags):
-        """media用の関数
+        """ラベルを数字にコンバー数
 
         Args:
             tags (list): アノテーションにつけられたラベル
@@ -80,69 +65,21 @@ class ConfirmAnnotation:
             int: ラベルをインデックスに変換
 
         """
-        label = tags[0]
+        label = tags[0] if tags[0] != 'main' else tags[1]
         if label in self.label_list:
             return self.label_list.index(label)
-        elif label == 'main':
-            if label in self.label_list:
-                return self.label_list.index(tags[1])
-            else:
-                pass
-        elif self.label_list[0] == 'billboard':
-            return 0
         else:
-            pass
-
-    # def convert_label(self, tags):
-    #     """advertiser, product用の仮関数
-    #
-    #     Args:
-    #         tags (list): アノテーションにつけられたラベル
-    #
-    #     Returns:
-    #         int: ラベルをインデックスに変換
-    #
-    #     """
-    #     if 'main' in tags:
-    #         return None
-    #     else:
-    #         label = tags[0]
-    #         if label in self.label_list:
-    #             return self.label_list.index(label)
-    #         elif label == 'main':
-    #             if label in self.label_list:
-    #                 return self.label_list.index(tags[1])
-    #         else:
-    #             pass
-
-    def count_label(self, asset, image_path):
-        """アノテーションデータの各ラベルの総数を確認
-
-        Args:
-            asset (dict):
-            image_path (str):
-
-        Returns:
-
-        """
-        for region in asset['regions']:
-            label = region['tags'][0]
-            if label == 'main':
-                try:
-                    label = region['tags'][1]
-                except IndexError:
-                    print('エラーが起きたファイルがあります' + image_path)
-                    pass
-            if label not in self.label_dictionary:
-                self.label_dictionary[label] = 1
-            else:
-                self.label_dictionary[label] += 1
+            print('未知のラベルが検出されました : {}'.format(label))
 
 
 if __name__ in '__main__':
-    label_list, label_name = LabelList.Subway_Media.value
-    task_name = 'subway_media'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--task-name', required=True, type=str, help='ex. advertisr, media, product, ...')
+    opt = parser.parse_args()
+    task_name = opt.task_name
 
-    print(label_list, label_name)
-    ca = ConfirmAnnotation(label_list, label_name, task_name)
+    with open('./label_name/{}.yaml'.format(task_name)) as f:
+        label_list = yaml.safe_load(f)[task_name]
+
+    ca = ConfirmAnnotation(task_name, label_list)
     ca.main()

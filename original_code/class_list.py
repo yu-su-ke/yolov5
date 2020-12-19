@@ -10,7 +10,8 @@ class LabelList(Enum):
     Media = [['plane', 'sleeve', 'wall', 'roof', 'banner', 'standing', 'signage', 'vehicle',
               'subway', 'pillar'], 'media']
 
-    Subway_Media = [['above-door', 'above-window', 'banner', 'door-side', 'signage', 'sticker', 'strap'], "subway_media"]
+    Subway_Media = [['above-door', 'above-window', 'banner',
+                     'door-side', 'signage', 'sticker', 'strap'], "subway_media"]
 
     Place = [['indoor', 'outdoor', 'subway'], 'place']
 
@@ -21,13 +22,8 @@ class LabelList(Enum):
          'restaurant', 'soft_drink', 'sound', 'telecommunications', 'tobacco_luxury', 'transportation_leisure_travel',
          'tv'], 'genre']
 
-    Adv = [['キリンビール株式会社', 'サントリービール株式会社', 'チョーヤ梅酒株式会社', 'ウォルト・ディズニー・ジャパン株式会社',
-            '株式会社Cygames', 'ベトジェットエア', 'アウディジャパン株式会社', '株式会社マガジンハウス', '株式会社ブシロード',
-            '森永製菓株式会社', '株式会社湖池屋', '日本テレビ放送網株式会社', 'LVMHファッション・グループ・ジャパン株式会社',
-            '株式会社マイナビ', 'TBCグループ株式会社', '大塚製薬株式会社', 'レッドブル・ジャパン株式会社', 'モンスターエナジージャパン合同会社',
-            '大塚食品株式会社', '日本コカ・コーラ株式会社', '花王株式会社', 'Apple Japan合同会社', '株式会社早稲田アカデミー', 'Mastercard',
-            '株式会社NTTドコモ', 'KDDI株式会社', 'ソフトバンク株式会社', 'シチズン時計株式会社', 'LVMHウォッチ・ジュエリージャパン株式会社',
-            '大正製薬株式会社', '株式会社龍角散'], 'advertiser']
+    Adv = [['Apple Japan合同会社', 'KDDI株式会社', 'LVMHウォッチ・ジュエリージャパン株式会社', 'LVMHファッション・グループ・ジャパン株式会社', 'Mastercard', 'TBCグループ株式会社', 'アウディジャパン株式会社', 'ウォルト・ディズニー・ジャパン株式会社', 'キリンビール株式会社', 'サントリービール株式会社', 'シチズン時計株式会社', 'ソフトバンク株式会社', 'チョーヤ梅酒株式会社', 'トヨタ自動車株式会社', 'ビー・エム・ダブリュー株式会社', 'フォルクスワーゲングループジャパン株式会社', 'ベトジェットエア',
+            'マツダ株式会社', 'メルセデス・ベンツ日本株式会社', 'モンスターエナジージャパン合同会社', 'レッドブル・ジャパン株式会社', '大塚製薬株式会社', '大塚食品株式会社', '大正製薬株式会社', '日本コカ・コーラ株式会社', '日本テレビ放送網株式会社', '日産自動車株式会社', '本田技研工業株式会社', '株式会社Cygames', '株式会社NTTドコモ', '株式会社ブシロード', '株式会社マイナビ', '株式会社マガジンハウス', '株式会社早稲田アカデミー', '株式会社湖池屋', '株式会社龍角散', '森永製菓株式会社', '花王株式会社'], 'advertiser']
 
     Product = [
         ['Audi Q8', 'BTS', 'CELINE', 'CITIZEN xC', 'GINZA', 'Galaxy S20 5G', 'HUBLOT', 'LOEWE', 'MATCH', "MEN'S TBC",
