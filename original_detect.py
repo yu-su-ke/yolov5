@@ -9,6 +9,7 @@ import cv2
 import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
+import yaml
 
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams, LoadImages
@@ -26,7 +27,7 @@ def detect(save_img=False):
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
 
     # label_listの読み込み
-    with open('../data/{}.yaml'.format(task_name)) as f:
+    with open('./data/{}.yaml'.format(task_name)) as f:
         label_list = yaml.safe_load(f)['names']
 
     # Initialize
@@ -194,7 +195,7 @@ if __name__ == '__main__':
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     parser.add_argument('--update', action='store_true', help='update all models')
-    parser.add_argument('--task-name', required=True, type=str, help='ex. advertisr, media, product, ...')
+    parser.add_argument('--task-name', required=True, type=str, help='ex. advertiser, media, product, ...')
     opt = parser.parse_args()
     print(opt)
 
@@ -205,9 +206,10 @@ if __name__ == '__main__':
     os.system('rm -rf {}'.format(save_path))
 
     # 画像中から広告を一切検出できなかった画像を記録するディレクトリの用意
-    shutil.rmtree('./not_detect_test/')
-    if not os.path.isdir('./not_detect_test/'):
-        os.makedirs('./not_detect_test/'
+    if os.path.isdir('./not_detect_test/'):
+        shutil.rmtree('./not_detect_test/')
+    elif not os.path.isdir('./not_detect_test/'):
+        os.makedirs('./not_detect_test/')
 
     with torch.no_grad():
         if opt.update:  # update all models (to fix SourceChangeWarning)

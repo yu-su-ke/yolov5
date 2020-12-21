@@ -13,18 +13,10 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
+import yaml
 
 from scripts.extra.intersect_gt_and_dr import adjust_ground_and_detect
-from class_list import LabelList
 
-class_list, label_type = LabelList.Adv.value
-
-today = datetime.datetime.fromtimestamp(time.time())
-format_today = today.strftime('%Y_%m_%d_%H_%M_%S')
-save_path = 'billboard_{}_random_directory/{}'.format(label_type, format_today)
-
-# ground_truthとdetect両方に存在しないファイルを削除する. これを回すとground-truthがnullになるので最初だけ回す
-# adjust_ground_and_detect(label_type)
 
 MINOVERLAP = 0.5  # default value (defined in the PASCAL VOC2012 challenge)
 
@@ -36,6 +28,7 @@ parser.add_argument('-q', '--quiet', help="minimalistic console output.", action
 parser.add_argument('-i', '--ignore', nargs='+', type=str, help="ignore a list of classes.")
 # argparse receiving list of classes with specific IoU (e.g., python main.py --set-class-iou person 0.7)
 parser.add_argument('--set-class-iou', nargs='+', type=str, help="set IoU for a specific class.")
+parser.add_argument('--task-name', required=True, type=str, help='ex. advertiser, media, product, ...')
 args = parser.parse_args()
 
 '''
@@ -50,6 +43,14 @@ args = parser.parse_args()
                 (Right,Bottom)
 '''
 
+task_name = args.task_name
+# label_listの読み込み
+with open('../data/{}.yaml'.format(task_name)) as f:
+    label_list = yaml.safe_load(f)['names']
+today = datetime.datetime.fromtimestamp(time.time())
+format_today = today.strftime('%Y_%m_%d_%H_%M_%S')
+save_path = 'billboard_{}_random_directory/{}'.format(task_name, format_today)
+
 # if there are no classes to ignore then replace None by empty list
 if args.ignore is None:
     args.ignore = []
@@ -61,8 +62,8 @@ if args.set_class_iou is not None:
 # make sure that the cwd() is the location of the python script (so that every path makes sense)
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-GT_PATH = './input/billboard_' + label_type + '/ground-truth'
-DR_PATH = './input/billboard_' + label_type + '/detection-results'
+GT_PATH = './input/' + task_name + '/ground-truth'
+DR_PATH = './input/' + task_name + '/detection-results'
 # if there are no images then no animation can be shown
 IMG_PATH = os.path.join(os.getcwd(), 'input', 'images-optional')
 if os.path.exists(IMG_PATH):
@@ -429,8 +430,8 @@ for txt_file in ground_truth_files_list:
                 is_difficult = True
             else:
                 class_name, left, top, right, bottom = line.split()
-            if label_type in ['advertiser', 'product']:
-                class_name = class_list[int(class_name)]
+            if task_name in ['advertiser', 'product']:
+                class_name = label_list[int(class_name)]
 
         except ValueError:
             error_msg = "Error: File " + txt_file + " in the wrong format.\n"
@@ -525,8 +526,8 @@ for class_index, class_name in enumerate(gt_classes):
         for line in lines:
             try:
                 tmp_class_name, confidence, left, top, right, bottom = line.split()
-                if label_type in ['advertiser', 'product']:
-                    tmp_class_name = class_list[int(tmp_class_name)]
+                if task_name in ['advertiser', 'product']:
+                    tmp_class_name = label_list[int(tmp_class_name)]
             except ValueError:
                 error_msg = "Error: File " + txt_file + " in the wrong format.\n"
                 error_msg += " Expected: <class_name> <confidence> <left> <top> <right> <bottom>\n"
@@ -820,8 +821,8 @@ for txt_file in dr_files_list:
     lines_list = file_lines_to_list(txt_file)
     for line in lines_list:
         class_name = line.split()[0]
-        if label_type in ['advertiser', 'product']:
-            class_name = class_list[int(class_name)]
+        if task_name in ['advertiser', 'product']:
+            class_name = label_list[int(class_name)]
         # check if class is in the ignore list, if yes skip
         if class_name in args.ignore:
             continue
@@ -977,73 +978,73 @@ def add_margin(image, top, right, bottom, left, color):
     return result
 
 
-save_image_directory = './bad_detect'
-if os.path.exists(save_image_directory):
-    shutil.rmtree(save_image_directory)
-os.makedirs(save_image_directory)
+# save_image_directory = './bad_detect'
+# if os.path.exists(save_image_directory):
+#     shutil.rmtree(save_image_directory)
+# os.makedirs(save_image_directory)
 
-# print(image_correct_miss_dict)
-font_type = '/home/mokky/.pyenv/versions/advertisement_3.7.4/lib/python3.7/site-packages/matplotlib/mpl-data/fonts/ttf/ipaexg.ttf'
-fontPIL = ImageFont.truetype(font_type, 35)
+# # print(image_correct_miss_dict)
+# font_type = '/home/mokky/.pyenv/versions/advertisement_3.7.4/lib/python3.7/site-packages/matplotlib/mpl-data/fonts/ttf/ipaexg.ttf'
+# fontPIL = ImageFont.truetype(font_type, 35)
 
-count = 0
-for k, v in tqdm(image_correct_miss_dict.items()):
-    try:
-        recall = v['TP'] / v['gt_num']
-        precision = v['TP'] / (v['FP'] + v['TP'])
-        f1 = 2 * recall * precision / recall + precision
-    except ZeroDivisionError:
-        pass
-    except KeyError:
-        print(k)
-        continue
+# count = 0
+# for k, v in tqdm(image_correct_miss_dict.items()):
+#     try:
+#         recall = v['TP'] / v['gt_num']
+#         precision = v['TP'] / (v['FP'] + v['TP'])
+#         f1 = 2 * recall * precision / recall + precision
+#     except ZeroDivisionError:
+#         pass
+#     except KeyError:
+#         print(k)
+#         continue
 
-    if v['gt_num'] != v['TP']:
-        image_path = glob.glob('/home/mokky/Program/{}/images/test/{}.*'.format(label_type, k))[0]
-        # image = cv2.imread(image_path)
-        image = Image.open(image_path)
-        draw = ImageDraw.Draw(image)
-        # shutil.copy(image_path, './bad_detect/')
-        with open(TEMP_FILES_PATH + "/" + k + "_ground_truth.json", 'r') as json_file:
-            bounding_list = json.load(json_file)
-        for bounding in bounding_list:
-            if not bounding['used']:
-                x1, y1, x2, y2 = [int(i) for i in bounding['bbox'].split(' ')]
-                # 文字列を描画した際.Subway_の大きさを取得
-                # (w, h), baseline = cv2.getTextSize(bounding['class_name'], cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2)
-                w, h = draw.textsize(text=bounding['class_name'], font=fontPIL)
+#     if v['gt_num'] != v['TP']:
+#         image_path = glob.glob('/home/mokky/Program/{}/images/test/{}.*'.format(task_name, k))[0]
+#         # image = cv2.imread(image_path)
+#         image = Image.open(image_path)
+#         draw = ImageDraw.Draw(image)
+#         # shutil.copy(image_path, './bad_detect/')
+#         with open(TEMP_FILES_PATH + "/" + k + "_ground_truth.json", 'r') as json_file:
+#             bounding_list = json.load(json_file)
+#         for bounding in bounding_list:
+#             if not bounding['used']:
+#                 x1, y1, x2, y2 = [int(i) for i in bounding['bbox'].split(' ')]
+#                 # 文字列を描画した際.Subway_の大きさを取得
+#                 # (w, h), baseline = cv2.getTextSize(bounding['class_name'], cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2)
+#                 w, h = draw.textsize(text=bounding['class_name'], font=fontPIL)
 
-                # 対象のbounding_box
-                # cv2.rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), thickness=5)
-                draw.rectangle((x1, y1, x2, y2), outline=(0, 0, 255), width=5)
+#                 # 対象のbounding_box
+#                 # cv2.rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), thickness=5)
+#                 draw.rectangle((x1, y1, x2, y2), outline=(0, 0, 255), width=5)
 
-                # ラベルの背景色
-                # cv2.rectangle(image, (x1, y1 - 30), (x1 + w, y1), (255, 0, 0), thickness=-1)
-                draw.rectangle((x1, y1 - 35, x1 + w, y1), fill=(0, 0, 255))
+#                 # ラベルの背景色
+#                 # cv2.rectangle(image, (x1, y1 - 30), (x1 + w, y1), (255, 0, 0), thickness=-1)
+#                 draw.rectangle((x1, y1 - 35, x1 + w, y1), fill=(0, 0, 255))
 
-                # ラベル描画
-                # cv2.putText(image, bounding['class_name'], (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255),
-                #             thickness=3)
-                draw.text(xy=(x1, y1 - 35), text=bounding['class_name'], fill=(255, 255, 255), font=fontPIL)
+#                 # ラベル描画
+#                 # cv2.putText(image, bounding['class_name'], (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255),
+#                 #             thickness=3)
+#                 draw.text(xy=(x1, y1 - 35), text=bounding['class_name'], fill=(255, 255, 255), font=fontPIL)
 
-        # 画像余白作成
-        # height, width = image.shape[:2]
-        width, height = image.size
-        if height > 1600 or width > 1320 or height < 1600 or width < 1320:
-            # image = cv2.resize(image, (1600, 1320))
-            image = image.resize((1600, 1320))
-        top, right, bottom, left = 60, 0, 60, 0
-        new_image = add_margin(image, top, right, bottom, left, (128, 128, 128))
+#         # 画像余白作成
+#         # height, width = image.shape[:2]
+#         width, height = image.size
+#         if height > 1600 or width > 1320 or height < 1600 or width < 1320:
+#             # image = cv2.resize(image, (1600, 1320))
+#             image = image.resize((1600, 1320))
+#         top, right, bottom, left = 60, 0, 60, 0
+#         new_image = add_margin(image, top, right, bottom, left, (128, 128, 128))
 
-        # 画像番号の表示
-        # cv2.putText(new_image, str(count), (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255, 255, 255), thickness=2)
-        new_draw = ImageDraw.Draw(new_image)
-        fontPIL = ImageFont.truetype(font_type, 45)
-        new_draw.text(xy=(5, 5), text=str(count), fill=(255, 255, 255), font=fontPIL)
-        count += 1
+#         # 画像番号の表示
+#         # cv2.putText(new_image, str(count), (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255, 255, 255), thickness=2)
+#         new_draw = ImageDraw.Draw(new_image)
+#         fontPIL = ImageFont.truetype(font_type, 45)
+#         new_draw.text(xy=(5, 5), text=str(count), fill=(255, 255, 255), font=fontPIL)
+#         count += 1
 
-        # 画像の保存
-        # cv2.imwrite('{}/{}.jpg'.format(save_image_directory, k), new_image)
-        new_image.save('{}/{}.jpg'.format(save_image_directory, k), quality=95)
+#         # 画像の保存
+#         # cv2.imwrite('{}/{}.jpg'.format(save_image_directory, k), new_image)
+#         new_image.save('{}/{}.jpg'.format(save_image_directory, k), quality=95)
 
-shutil.rmtree(TEMP_FILES_PATH)
+# shutil.rmtree(TEMP_FILES_PATH)

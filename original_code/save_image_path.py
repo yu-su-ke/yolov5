@@ -59,7 +59,7 @@ class ConfirmAnnotation:
         text_file.write('\n')
 
     def convert_label(self, tags):
-        """ラベルを数字にコンバー数
+        """ラベルを数字にコンバートする
 
         Args:
             tags (list): アノテーションにつけられたラベル
@@ -68,6 +68,10 @@ class ConfirmAnnotation:
             int: ラベルをインデックスに変換
 
         """
+        # advertiser, productはmainを含んでいたらパスする
+        if self.task_name in ['advertiser', 'product']:
+            if 'main' in tags:
+                return
         label = tags[0] if tags[0] != 'main' else tags[1]
         if label in self.label_list:
             return self.label_list.index(label)
@@ -77,7 +81,7 @@ class ConfirmAnnotation:
 
 if __name__ in '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task-name', required=True, type=str, help='ex. advertisr, media, product, ...')
+    parser.add_argument('--task-name', required=True, type=str, help='ex. advertiser, media, product, ...')
     opt = parser.parse_args()
     task_name = opt.task_name
 

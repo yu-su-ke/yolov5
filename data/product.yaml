@@ -1,0 +1,13 @@
+# train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
+train: /home/mokky/Program/product/images/train/
+val: /home/mokky/Program/product/images/val/
+
+# number of classes
+nc: 33
+
+# class names
+names: ['Audi Q8', 'BTS', 'CELINE', 'CITIZEN xC', 'GINZA', 'Galaxy S20 5G', 'HUBLOT', 'LOEWE', 'MATCH', "MEN'S TBC",
+        'RAIZIN', 'Red Bullエナジードリンク', 'SK-Ⅱ フェイシャルトリートメントエッセンス', 'The CHOYA', 'YouTube', 'iPhone 11',
+        'iPhone 11 Pro', 'iPhone SE', 'inゼリー', 'エステティックTBC', 'オロナミンC', 'グランブルーファンタジー', 'コカ・コーラ',
+        'ニベア', 'プレミアムモルツ', 'ヘアードライヤー ナノケア', 'ポカリスエット', 'マイナビ就職', 'ライオン・キング', 'リポビタン',
+        '一番搾り', '湖池屋プライドポテト', '龍角散ダイレクト']

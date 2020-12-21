@@ -18,8 +18,8 @@ def adjust_ground_and_detect(label_type):
 
     parent_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     parent_path = os.path.abspath(os.path.join(parent_path, os.pardir))
-    GT_PATH = os.path.join(parent_path, 'input/billboard_' + label_type, 'ground-truth')
-    DR_PATH = os.path.join(parent_path, 'input/billboard_' + label_type, 'detection-results')
+    GT_PATH = os.path.join(parent_path, 'input/' + label_type, 'ground-truth')
+    DR_PATH = os.path.join(parent_path, 'input/' + label_type, 'detection-results')
 
     backup_folder = 'backup_no_matches_found'  # must end without slash
 

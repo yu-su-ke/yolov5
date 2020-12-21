@@ -29,7 +29,7 @@ def main(image_directory, save_directory):
 
 if __name__ in '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task-name', required=True, type=str, help='ex. advertisr, media, product, ...')
+    parser.add_argument('--task-name', required=True, type=str, help='ex. advertiser, media, product, ...')
 
     opt = parser.parse_args()
     task_name = opt.task_name
