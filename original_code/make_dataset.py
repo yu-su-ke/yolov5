@@ -114,7 +114,7 @@ class MakeDataset:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task-name', required=True, type=str, help='ex. advertisr, media, product, ...')
+    parser.add_argument('--task-name', required=True, type=str, help='ex. advertiser, media, product, ...')
     parser.add_argument('--history-task', required=True, type=str, help='ex. random_directory, ...')
 
     opt = parser.parse_args()

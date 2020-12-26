@@ -103,8 +103,8 @@ if __name__ in '__main__':
     opt = parser.parse_args()
     task_name = opt.task_name
 
-    with open('./label_name/{}.yaml'.format(task_name)) as f:
-        label_list = yaml.safe_load(f)[task_name]
+    with open('../data/{}.yaml'.format(task_name)) as f:
+        label_list = yaml.safe_load(f)['names']
 
     save_path = '../../{}/labels/{}/'.format(task_name, task_name)
     if not os.path.exists(save_path):

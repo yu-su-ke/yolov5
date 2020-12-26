@@ -137,7 +137,8 @@ def detect(save_img=False):
                 # cut_image(detection_image_point_list, source, image_name)  # cut out detection range
             # 画像中から広告を一切検出できなかった画像を記録
             else:
-                shutil.copy(path, './not_detect_test/')
+                pass
+                # shutil.copy(path, './not_detect_test/')
                 # with open('./not_detect_image.txt', 'a', encoding='utf-8') as text_file:
                 #     text_file.write(path + '\n')
 
@@ -200,7 +201,7 @@ if __name__ == '__main__':
     print(opt)
 
     # mAP用の保存ディレクトリの用意
-    save_path = './mAP/input/billboard_{}/detection-results/*'.format(opt.task_name)
+    save_path = './mAP/input/{}/detection-results/*'.format(opt.task_name)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     os.system('rm -rf {}'.format(save_path))
