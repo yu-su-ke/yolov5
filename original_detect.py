@@ -137,7 +137,11 @@ def detect(save_img=False):
                 # cut_image(detection_image_point_list, source, image_name)  # cut out detection range
             # 画像中から広告を一切検出できなかった画像を記録
             else:
-                pass
+                image_name = os.path.splitext(os.path.basename(path))[0]
+                save_detect_result_path = './mAP/input/{}/detection-results/'.format(task_name) + \
+                                                  image_name
+                with open(save_detect_result_path + '.txt', 'a') as f:
+                    f.write('')
                 # shutil.copy(path, './not_detect_test/')
                 # with open('./not_detect_image.txt', 'a', encoding='utf-8') as text_file:
                 #     text_file.write(path + '\n')

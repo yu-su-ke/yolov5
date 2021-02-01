@@ -33,6 +33,8 @@ class ConfirmAnnotation:
                     self.write_annotation_path_label(asset, image_path, text_file)
         _, label_count_dictionary = count_label_num.prepare_image_label(self.base_path)
         print(sorted(label_count_dictionary.items(), key=lambda x: x[1], reverse=True))
+        for k,v in sorted(label_count_dictionary.items(), key=lambda x: x[1], reverse=True):
+            print('{},{}'.format(k,v))
         
 
     def write_annotation_path_label(self, asset, image_path, text_file):
