@@ -30,13 +30,23 @@ class MakeDataset:
         pattern = ['*.jpg', '*.JPG', '*.png', '*.PNG']
         image_path_list = [glob.glob(os.path.join(self.original_image_path, i)) for i in pattern]
         image_path_list = list(itertools.chain.from_iterable(image_path_list))
+        image_path_list.sort()
         random.seed(1)
         random.shuffle(image_path_list)
 
+        # with open('/home/mokky/Program/advertiser/history/random_directory/billboard_test.txt', 'r', encoding='utf-8') as text_file:
+        #     text_lines = text_file.readlines()
+        # text_lines = [i.replace('\n', '').replace('/test', '') for i in text_lines]
+        # for image_path in image_path_list:
+        #     if image_path in text_lines:
+        #         image_path_list.remove(image_path)
+
         # 媒体用
-        # self.split_learning_data(image_path_list)
+        if self.task_name == 'media':
+            self.split_learning_data(image_path_list)
         # 企業名、商品名用
-        self.split_per_directory_data(image_path_list)
+        elif self.task_name in ['advertiser', 'product']:
+            self.split_per_directory_data(image_path_list)
 
     def split_learning_data(self, image_path_list):
         """ラベル毎などを考慮せず、純粋なファイル数だけでデータセットを作る
@@ -84,12 +94,14 @@ class MakeDataset:
             else:
                 label_count[target_label] += 1
 
-            if label_count[target_label] <= self.label_count_dictionary[target_label] * 0.6:
+            if label_count[target_label] <= self.label_count_dictionary[target_label] * 0.375:
                 self.save_file('train', image_path, image_name, label_path, text_name)
-            elif self.label_count_dictionary[target_label] * 0.6 < label_count[target_label] <= self.label_count_dictionary[target_label] * 0.8:
+            elif self.label_count_dictionary[target_label] * 0.375 < label_count[target_label] <= self.label_count_dictionary[target_label] * 0.5:
                 self.save_file('val', image_path, image_name, label_path, text_name)
             elif label_count[target_label] > self.label_count_dictionary[target_label] * 0.8:
                 self.save_file('test', image_path, image_name, label_path, text_name)
+            else:
+                pass
 
     def save_file(self, data_type, image_path, image_name, label_path, text_name):
         """
@@ -104,9 +116,9 @@ class MakeDataset:
         """
         save_history_path = '../../{}/history/{}/billboard_{}.txt'.format(self.task_name, self.history_task, data_type)
         try:
+            shutil.move(image_path, '{}/{}/{}'.format(self.original_image_path, data_type, image_name))
+            shutil.copy(label_path, '{}/{}/{}'.format(self.original_label_path, data_type, text_name))
             with open(save_history_path, 'a', encoding='utf-8') as text_file:
-                shutil.move(image_path, '{}/{}/{}'.format(self.original_image_path, data_type, image_name))
-                shutil.copy(label_path, '{}/{}/{}'.format(self.original_label_path, data_type, text_name))
                 text_file.write('{}/{}/{}\n'.format(self.original_image_path, data_type, image_name))
         except FileNotFoundError:
             print('ファイルパスが存在しません')
