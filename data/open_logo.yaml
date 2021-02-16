@@ -1,0 +1,6 @@
+names:
+- logo
+nc: 1
+test: ../open_logo/images/test
+train: ../open_logo/images/train
+val: ../open_logo/images/val
