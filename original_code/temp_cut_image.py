@@ -16,13 +16,17 @@ def cut_image(detection_image_point_list, source, image_name):
     Returns: None
 
     """
-    x1, y1, x2, y2 = calculate_max_area(detection_image_point_list)
-    im0 = cv2.imread(os.path.join(source, image_name + '.jpg'))
-    img1 = im0[y1: y2, x1: x2]
-    save_directory = './inference/trimming_image/' + os.path.basename(source)
-    if not os.path.exists(save_directory):
-        os.makedirs(save_directory)
-    cv2.imwrite('{}/{}.jpg'.format(save_directory, image_name), img1)
+    # x1, y1, x2, y2 = calculate_max_area(detection_image_point_list)
+    count = 0
+    for detection_image_point in detection_image_point_list:
+        x1, y1, x2, y2 = detection_image_point
+        im0 = cv2.imread(os.path.join(source, image_name + '.jpg'))
+        img1 = im0[y1: y2, x1: x2]
+        save_directory = './inference/trimming_image/' + os.path.basename(source)
+        if not os.path.exists(save_directory):
+            os.makedirs(save_directory)
+        cv2.imwrite('{}/{}_{}.jpg'.format(save_directory, image_name, count), img1)
+        count += 1
 
 
 def calculate_max_area(detection_image_point_list):

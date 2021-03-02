@@ -134,7 +134,7 @@ def detect(save_img=False):
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
-                # cut_image(detection_image_point_list, source, image_name)  # cut out detection range
+                cut_image(detection_image_point_list, source, image_name)  # cut out detection range
             # 画像中から広告を一切検出できなかった画像を記録
             else:
                 image_name = os.path.splitext(os.path.basename(path))[0]
