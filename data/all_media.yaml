@@ -1,0 +1,20 @@
+names:
+- above-door
+- above-window
+- banner
+- door-side
+- pillar
+- plane
+- roof
+- signage
+- sleeve
+- standing
+- sticker
+- strap
+- subway
+- vehicle
+- wall
+nc: 15
+test: ../all_media/images/test
+train: ../all_media/images/train
+val: ../all_media/images/val

@@ -42,7 +42,7 @@ class MakeDataset:
         #         image_path_list.remove(image_path)
 
         # 媒体用
-        if self.task_name == 'media':
+        if self.task_name in ['media', 'subway_media', 'all_media']:
             self.split_learning_data(image_path_list)
         # 企業名、商品名用
         elif self.task_name in ['advertiser', 'product']:
@@ -94,9 +94,9 @@ class MakeDataset:
             else:
                 label_count[target_label] += 1
 
-            if label_count[target_label] <= self.label_count_dictionary[target_label] * 0.375:
+            if label_count[target_label] <= self.label_count_dictionary[target_label] * 0.6:
                 self.save_file('train', image_path, image_name, label_path, text_name)
-            elif self.label_count_dictionary[target_label] * 0.375 < label_count[target_label] <= self.label_count_dictionary[target_label] * 0.5:
+            elif self.label_count_dictionary[target_label] * 0.6 < label_count[target_label] <= self.label_count_dictionary[target_label] * 0.8:
                 self.save_file('val', image_path, image_name, label_path, text_name)
             elif label_count[target_label] > self.label_count_dictionary[target_label] * 0.8:
                 self.save_file('test', image_path, image_name, label_path, text_name)

@@ -1,11 +1,15 @@
-# train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
-train: /home/mokky/Program/media/images/train/
-val: /home/mokky/Program/media/images/val/
-test: /home/mokky/Program/media/images/test/
-
-# number of classes
+names:
+- banner
+- pillar
+- plane
+- roof
+- signage
+- sleeve
+- standing
+- subway
+- vehicle
+- wall
 nc: 10
-
-# class names
-names: ['plane', 'sleeve', 'wall', 'roof', 'banner', 'standing', 'signage', 'vehicle',
-        'subway', 'pillar']
+test: ../media/images/test
+train: ../media/images/train
+val: ../media/images/val
